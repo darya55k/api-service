@@ -1,0 +1,22 @@
+FROM python:3.11.4-slim-buster AS base
+
+ENV APP_HOME=/app
+WORKDIR $APP_HOME
+ENV PYTHONPATH=$APP_HOME
+
+COPY requirements.txt .
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache -r requirements.txt
+
+FROM base AS jupyter
+
+COPY requirements-dev.txt .
+RUN pip install -r requirements-dev.txt
+
+COPY Scripts/entrypoint-dev-jupyter.sh Scripts/entrypoint-dev-jupyter.sh
+RUN chmod +x Scripts/entrypoint-dev-jupyter.sh
+
+FROM base AS fastapi
+
+COPY Scripts/entrypoint-dev-fastapi.sh Scripts/entrypoint-dev-fastapi.sh
+RUN chmod +x Scripts/entrypoint-dev-fastapi.sh

@@ -1,0 +1,20 @@
+FROM python:3.11.4-slim-buster
+
+ENV APP_HOME=/app
+
+WORKDIR $APP_HOME
+ENV PYTHONPATH=$APP_HOME
+
+COPY requirements.txt .
+
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install -r requirements.txt
+
+COPY Scripts Scripts
+RUN chmod +x Scripts/*.sh
+
+COPY src src
+
+EXPOSE 8890
+
+CMD ["bash", "Scripts/entrypoint-prod.sh"]
