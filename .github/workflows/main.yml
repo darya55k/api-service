@@ -57,12 +57,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Deploy to server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v0.1.3
       with:
         host: ${{ env.SERVER_HOST }}
         username: ${{ env.SERVER_USER }}
         key: ${{ env.SERVER_SSH_PRIVATE_KEY }}
         script: |
+          docker --version
           docker pull ${{ env.IMAGE_NAME }}
           docker stop ${{ env.CONTAINER_NAME }} || true
           docker rm ${{ env.CONTAINER_NAME }} || true
