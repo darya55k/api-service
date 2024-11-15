@@ -1,58 +1,39 @@
-"""
-Application
-"""
+"""App"""
 
-import os
+import pickle
 
-from fastapi import FastAPI, HTTPException
+import numpy as np
+from fastapi import FastAPI
 from pydantic import BaseModel
-import pandas as pd
-from loguru import logger
-
-from src.inference import load_model, predict
 
 
-logger.info("Loading model")
-MODEL_PATH = os.path.join("models", "model.joblib")
-MODEL = load_model(MODEL_PATH)
-logger.info("Model loaded")
+class Transaction(BaseModel):
+    terminal_id: int
+    hour_tx_datetime: float
+    tx_amount: float
+    percent_fraud_on_terminal: float
 
 
 app = FastAPI()
-
-class IrisFeatures(BaseModel):
-    """Iris features"""
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
+with open("./src/model-1.pkl", "rb") as f:
+    model = pickle.load(f)
 
 @app.get("/")
-def health_check() -> dict:
-    """Health check"""
-    return {"status": "ok"}
+def healthcheck():
+    return {"status": "OK"}
 
 
 @app.post("/predict")
-def make_prediction(features: IrisFeatures) -> dict:
-    """Make a prediction by model"""
+def predict(transaction: Transaction):
     try:
-        data = pd.DataFrame([features.model_dump()])
-        prediction = predict(MODEL, data)
-        classes = ["setosa", "versicolor", "virginica"]
-        pred_class = classes[prediction[0]]
+        vector = np.array([
+            int(transaction.terminal_id),
+            float(transaction.hour_tx_datetime),
+            float(transaction.tx_amount),
+            float(transaction.percent_fraud_on_terminal)
+        ]).reshape(1, -1)
+        pred = model.predict(vector)
+        ans = int(pred)
+        return {"pred": ans}
     except Exception as e:
-        logger.error(f"Prediction error: {e}")
-        raise HTTPException(
-            status_code=500, 
-            detail="An error occurred during prediction"
-        )
-    
-    return {"prediction": pred_class}
-
-# {
-#     "sepal_length": 5.1,
-#     "sepal_width": 3.3,
-#     "petal_length": 1.7,
-#     "petal_width": 0.5
-# }
+        return {"error": str(e)}
