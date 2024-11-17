@@ -15,7 +15,7 @@ class Transaction(BaseModel):
 
 
 app = FastAPI()
-with open("./src/model-1.pkl", "rb") as f:
+with open("./model-1.pkl", "rb") as f:
     model = pickle.load(f)
 
 @app.get("/")
