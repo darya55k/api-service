@@ -20,7 +20,7 @@ env:
   LINTER_CMD: 'ruff check src'
 
 jobs:
-  run-tests:
+  tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -41,7 +41,7 @@ jobs:
           pytest tests.py
 
   build:
-    needs: run-tests
+    needs: tests
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
